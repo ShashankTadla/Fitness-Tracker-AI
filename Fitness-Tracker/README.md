@@ -44,7 +44,7 @@ All frontend requests go through the backend, which fetches or updates data from
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com//Fitness-Tracker.git  // fix this
+git clone https://github.com/ShashankTadla/Fitness-Tracker.git  // fix this
 cd Fitness-Tracker
 ````
 ---
