@@ -2,40 +2,48 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const authRoutes = require('./routes/auth.routes');
-const app = express();
-const db = require('./models');
+const db = require('./models'); // ✅ Make sure this path is correct
 
+const app = express();
+
+// ✅ Middleware setup
 app.use(cors({
-    origin: 'http://localhost:3000', // only allowing my frontend to make backend calls
-    methods: ['GET', 'POST'],        
-    credentials: true                
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/', authRoutes);
+app.use(bodyParser.json());
 
-
-app.get("/", (req, res) => {
-  res.send("Health & Fitness Tracker Backend");
-});
-
+// ✅ Routes
+const authRoutes = require('./routes/auth.routes');
 const waterLogRoutes = require('./routes/waterLog.routes');
-app.use('/api/water', waterLogRoutes);
-
 const calorieLogRoutes = require('./routes/calorieLog.routes');
-app.use('/api/calorie', calorieLogRoutes);
-
 const sleepLogRoutes = require('./routes/sleepLog.routes');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/water', waterLogRoutes);
+app.use('/api/calorie', calorieLogRoutes);
 app.use('/api/sleep', sleepLogRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Health & Fitness Tracker Backend is running ✅");
+});
 
+// ✅ Database connection + server start
 const PORT = process.env.PORT || 5000;
-db.sequelize.sync()
+
+db.sequelize.authenticate()
   .then(() => {
-    console.log("DB connected");
+    console.log("✅ Database connection established successfully.");
+    return db.sequelize.sync(); // Sync all models with DB
+  })
+  .then(() => {
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`🚀 Server is running on port ${PORT}`);
     });
   })
-.catch(err => console.log("DB connection error:", err));
+  .catch(err => {
+    console.error("❌ Database connection error:", err);
+  });

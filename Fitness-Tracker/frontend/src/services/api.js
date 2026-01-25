@@ -1,10 +1,11 @@
 import axios from 'axios';
 
+// Base URL for backend API
 const API = axios.create({
   baseURL: 'http://localhost:5000/api', 
 });
 
-// Adding  token to all requests (and this is checked in the middleware whether the starting )
+// Add token to every request if present
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -13,11 +14,15 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-// Exporting individual API calls to the frontend compos 
-export const getBackendStatus = () => axios.get('http://localhost:5000/'); // for testing only(will print backend running in port 5000)
-export const registerUser = (formData) => API.post('/register', formData);//register form
-export const loginUser = (formData) => API.post('/login', formData);//login form
-export const getProfile = () => API.get('/profile');//fetching profile for userprofile.jsx
-export const logWater = (data) => API.post('/water/log', data);//updating water log
-export const logCalorie= (data) => API.post('/calorie/log',data);//updating calorie log
-export const logSleep = (data) => API.post('/sleep/log', data);//updating sleep log
+// ✅ Auth endpoints
+export const registerUser = (formData) => API.post('/auth/register', formData);
+export const loginUser = (formData) => API.post('/auth/login', formData);
+export const getProfile = () => API.get('/auth/profile');
+
+// ✅ Logs endpoints
+export const logWater = (data) => API.post('/water/log', data);
+export const logCalorie = (data) => API.post('/calorie/log', data);
+export const logSleep = (data) => API.post('/sleep/log', data);
+
+// ✅ Check backend status (for testing)
+export const getBackendStatus = () => axios.get('http://localhost:5000/');

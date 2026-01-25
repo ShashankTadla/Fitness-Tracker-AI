@@ -1,18 +1,9 @@
-require('dotenv').config();
-
 module.exports = {
-  HOST: process.env.DB_HOST,
-  USER: process.env.DB_USER,
-  PASSWORD: process.env.DB_PASSWORD,
-  DB: process.env.DB_NAME,
-  port: Number(process.env.DB_PORT),
+  HOST: "localhost",       // local server
+  USER: "root",            // default XAMPP MySQL username
+  PASSWORD: "",            // leave empty unless you set a password in XAMPP
+  DB: "fitness_tracker",   // name of the database you'll create
   dialect: "mysql",
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  },
   pool: {
     max: 5,
     min: 0,
