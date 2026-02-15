@@ -2,9 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const db = require('./models'); // ✅ Make sure this path is correct
+const db = require('./models'); 
+const aiRoutes = require("./routes/ai.routes");
+
+
 
 const app = express();
+app.use("/api/ai", aiRoutes);
 
 // ✅ Middleware setup
 app.use(cors({
