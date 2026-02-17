@@ -1,30 +1,33 @@
 const db = require("../models");
-const DailyLog = db.water_log;
+const WaterLog = db.water_log;
 
 exports.createOrUpdateLog = async (req, res) => {
-  const { username, date, ...logData } = req.body;
-
   try {
-    const [log, created] = await DailyLog.findOrCreate({
-      where: { username, date },
-      defaults: { ...logData }
+    const userId = req.user.id; // from JWT
+    const { date, waterIntake } = req.body;
+
+    const [log, created] = await WaterLog.findOrCreate({
+      where: { userId, date },
+      defaults: { waterIntake }
     });
 
     if (!created) {
-      await log.update(logData);
+      await log.update({ waterIntake });
     }
 
     res.status(200).json({ message: created ? "Log created" : "Log updated" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to store log", error: err.message });
+    console.error("❌ Water log error:", err);
+    res.status(500).json({ message: "Failed to store water log", error: err.message });
   }
 };
 
 exports.getDailyLog = async (req, res) => {
-  const { username, date } = req.query;
-
   try {
-    const log = await DailyLog.findOne({ where: { username, date } });
+    const userId = req.user.id;
+    const { date } = req.query;
+
+    const log = await WaterLog.findOne({ where: { userId, date } });
     res.status(200).json(log || {});
   } catch (err) {
     res.status(500).json({ message: "Failed to fetch log", error: err.message });
@@ -32,14 +35,16 @@ exports.getDailyLog = async (req, res) => {
 };
 
 exports.getWeeklyStats = async (req, res) => {
-  const { username, endDate } = req.query;
-  const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - 6);
-
   try {
-    const logs = await DailyLog.findAll({
+    const userId = req.user.id;
+    const { endDate } = req.query;
+
+    const startDate = new Date(endDate);
+    startDate.setDate(startDate.getDate() - 6);
+
+    const logs = await WaterLog.findAll({
       where: {
-        username,
+        userId,
         date: {
           [db.Sequelize.Op.between]: [startDate, endDate]
         }

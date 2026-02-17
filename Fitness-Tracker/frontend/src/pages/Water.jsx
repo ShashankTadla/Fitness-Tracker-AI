@@ -6,11 +6,11 @@ import { FaPlus, FaUndo } from 'react-icons/fa';
 import { logWater } from '../services/api';
 
 const Water = () => {
-  const username = localStorage.getItem('username');
   const today = new Date().toISOString().split('T')[0];
 
   const [goal, setGoal] = useState(() => parseFloat(localStorage.getItem('goal')) || 3);
   const [input, setInput] = useState('');
+
   const [logs, setLogs] = useState(() => {
     const storedDate = localStorage.getItem('lastUpdatedDate');
     return storedDate === today
@@ -21,27 +21,28 @@ const Water = () => {
   const total = logs.reduce((sum, val) => sum + parseFloat(val), 0);
   const percentage = Math.min((total / goal) * 100, 100).toFixed(0);
 
-   useEffect(() => {
+  // ✅ Save logs locally + sync to DB
+  useEffect(() => {
     localStorage.setItem('logs', JSON.stringify(logs));
     localStorage.setItem('goal', goal);
     localStorage.setItem('lastUpdatedDate', today);
 
-    if (username) {
-      logWater({
-        username,
-        date: today,
-        waterIntake: total
-      });
-      console.log("💾 Water log stored in DB ");
-    }
-  }, [logs, goal,today,total,username]);
+    logWater({
+      date: today,
+      waterIntake: total
+    })
+      .then(() => console.log("💾 Water log stored in DB"))
+      .catch((err) => console.error("❌ Failed to store water log:", err));
+  }, [logs, goal, today, total]);
 
-
+  // ✅ Reset at midnight
   useEffect(() => {
     const now = new Date();
     const resetTime = new Date();
     resetTime.setHours(24, 0, 0, 0);
+
     const msUntilReset = resetTime - now;
+
     const resetTimeout = setTimeout(() => {
       setLogs([]);
       localStorage.setItem('logs', JSON.stringify([]));
@@ -81,15 +82,19 @@ const Water = () => {
             textSize: '18px',
           })}
         />
+
         <div className="summary">
           <p><strong>Current:</strong> {total.toFixed(2)} L</p>
           <p><strong>Goal:</strong> {goal} L</p>
-          <p>You need <strong>{(goal - total).toFixed(2)} L</strong> more</p>
+          <p>
+            You need <strong>{Math.max(goal - total, 0).toFixed(2)} L</strong> more
+          </p>
         </div>
       </div>
 
       <div className="log-section">
         <h2>Log Water Intake</h2>
+
         <input
           type="number"
           step="0.01"
@@ -97,14 +102,23 @@ const Water = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
+
         <div className="quick-buttons">
           {[0.25, 0.5, 1].map((val) => (
-            <button key={val} onClick={() => setInput(val)}>{val * 1000}ml</button>
+            <button key={val} onClick={() => setInput(val)}>
+              {val * 1000}ml
+            </button>
           ))}
         </div>
+
         <div className="action-buttons">
-          <button className="add" onClick={handleLog}><FaPlus /> Add</button>
-          <button className="remove" onClick={removeLast}><FaUndo /> Remove Last</button>
+          <button className="add" onClick={handleLog}>
+            <FaPlus /> Add
+          </button>
+
+          <button className="remove" onClick={removeLast}>
+            <FaUndo /> Remove Last
+          </button>
         </div>
 
         <div className="goal-update">

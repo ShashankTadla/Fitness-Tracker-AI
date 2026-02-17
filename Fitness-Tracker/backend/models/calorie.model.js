@@ -5,8 +5,8 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true
     },
-    username:{
-      type: DataTypes.STRING,
+    userId: {
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     date: {
@@ -14,8 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     calorieIntake: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.FLOAT
     }
   });
+
   return CalorieLog;
 };

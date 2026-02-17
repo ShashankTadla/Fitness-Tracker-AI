@@ -5,9 +5,9 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true,
       autoIncrement: true,
     },
-    username: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     },
     date: {
       type: DataTypes.DATEONLY,

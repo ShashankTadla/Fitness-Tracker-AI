@@ -66,16 +66,19 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
     res.status(200).json({ token, user: { id: user.id, username: user.username } });
-  } 
-  catch (err) {
-    // 🔥 Replace your existing catch block with this:
+  } catch (err) {
     console.error("❌ Login failed error:", err);
     res.status(500).json({ message: "Login failed", error: err.message });
   }
 };
+
 
 
 exports.getProfile = async (req, res) => {

@@ -22,58 +22,69 @@ const defaultFoods = [
 ];
 
 const Calorie = () => {
-  const username = localStorage.getItem('username');
   const today = new Date().toISOString().split('T')[0];
 
-  const userLogKey = `calorieLogs_${username}`;
-  const userGoalKey = `calorieGoal_${username}`;
-  const dateKey = `calorieDate_${username}`;
+  // localStorage keys (no username needed now)
+  const logKey = "calorieLogs";
+  const goalKey = "calorieGoal";
+  const dateKey = "calorieDate";
 
-  const [goal, setGoal] = useState(() => parseInt(localStorage.getItem(userGoalKey)) || 2000);
+  const [goal, setGoal] = useState(() => parseInt(localStorage.getItem(goalKey)) || 2000);
   const [inputGoal, setInputGoal] = useState(goal);
+
   const [logs, setLogs] = useState(() => {
     const savedDate = localStorage.getItem(dateKey);
-    return savedDate === today ? JSON.parse(localStorage.getItem(userLogKey)) || [] : [];
+    return savedDate === today
+      ? JSON.parse(localStorage.getItem(logKey)) || []
+      : [];
   });
+
   const [customFood, setCustomFood] = useState({ name: '', cal: '' });
 
   const consumed = logs.reduce((sum, item) => sum + item.cal, 0);
   const percentage = Math.min((consumed / goal) * 100, 100).toFixed(0);
 
+  // ✅ Sync total calories to DB
   const syncToDatabase = async (newLogs) => {
-    if (!username) return;
     const newConsumed = newLogs.reduce((sum, item) => sum + item.cal, 0);
+
     try {
-      await logCalorie({ username, date: today, calorieIntake: newConsumed });
+      await logCalorie({
+        date: today,
+        calorieIntake: newConsumed
+      });
+      console.log("💾 Calorie log stored in DB");
     } catch (err) {
-      console.error('Failed to sync calories:', err);
+      console.error("❌ Failed to sync calories:", err);
     }
   };
 
+  // ✅ Save logs locally + sync DB
   useEffect(() => {
-    localStorage.setItem(userLogKey, JSON.stringify(logs));
-    localStorage.setItem(userGoalKey, goal);
+    localStorage.setItem(logKey, JSON.stringify(logs));
+    localStorage.setItem(goalKey, goal);
     localStorage.setItem(dateKey, today);
+
     syncToDatabase(logs);
   }, [logs, goal, today]);
 
+  // ✅ Reset at midnight
   useEffect(() => {
     const now = new Date();
     const midnight = new Date();
     midnight.setHours(24, 0, 0, 0);
+
     const msUntilMidnight = midnight.getTime() - now.getTime();
 
     const resetAtMidnight = () => {
       setLogs([]);
-      localStorage.setItem(userLogKey, JSON.stringify([]));
+      localStorage.setItem(logKey, JSON.stringify([]));
       localStorage.setItem(dateKey, new Date().toISOString().split('T')[0]);
       syncToDatabase([]);
+      console.log("🔄 Calorie logs reset at midnight");
     };
 
-    const timeout = setTimeout(() => {
-      resetAtMidnight();
-      setInterval(resetAtMidnight, 24 * 60 * 60 * 1000); 
-    }, msUntilMidnight);
+    const timeout = setTimeout(resetAtMidnight, msUntilMidnight);
 
     return () => clearTimeout(timeout);
   }, []);
@@ -93,7 +104,12 @@ const Calorie = () => {
 
   const handleCustomInput = () => {
     if (customFood.name && customFood.cal) {
-      const newFood = { name: customFood.name, cal: parseInt(customFood.cal), qty: 'custom' };
+      const newFood = {
+        name: customFood.name,
+        cal: parseInt(customFood.cal),
+        qty: 'custom'
+      };
+
       handleAdd(newFood);
       setCustomFood({ name: '', cal: '' });
     }
@@ -112,15 +128,19 @@ const Calorie = () => {
             textSize: '18px',
           })}
         />
+
         <div className="summary">
           <p><strong>Consumed:</strong> {consumed} kcal</p>
           <p><strong>Goal:</strong> {goal} kcal</p>
-          <p>You can eat <strong>{goal - consumed} kcal</strong> more</p>
+          <p>
+            You can eat <strong>{Math.max(goal - consumed, 0)} kcal</strong> more
+          </p>
         </div>
       </div>
 
       <div className="log-section">
         <h2>Log Calorie Intake</h2>
+
         <div className="food-list">
           {defaultFoods.map((food, i) => (
             <div key={i} className="food-card" onClick={() => handleAdd(food)}>
@@ -135,33 +155,42 @@ const Calorie = () => {
 
         <div className="custom-food">
           <h3>Custom Food</h3>
+
           <input
             type="text"
             placeholder="Food name"
             value={customFood.name}
             onChange={(e) => setCustomFood({ ...customFood, name: e.target.value })}
           />
+
           <input
             type="number"
             placeholder="Calories"
             value={customFood.cal}
             onChange={(e) => setCustomFood({ ...customFood, cal: e.target.value })}
           />
-          <button className="add" onClick={handleCustomInput}><FaPlus /> Add Custom</button>
+
+          <button className="add" onClick={handleCustomInput}>
+            <FaPlus /> Add Custom
+          </button>
         </div>
 
         <div className="action-buttons">
-          <button className="add" onClick={removeLast}><FaUndo /> Remove Last</button>
+          <button className="add" onClick={removeLast}>
+            <FaUndo /> Remove Last
+          </button>
         </div>
 
         <div className="goal-update">
           <label>Set Goal (kcal):</label>
+
           <input
             type="number"
             step="10"
             value={inputGoal}
             onChange={handleGoalChange}
           />
+
           <button onClick={updateGoal}>Update</button>
         </div>
 

@@ -16,10 +16,12 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-
 db.user = require("./user.model.js")(sequelize, DataTypes);
 db.water_log = require("./water.model.js")(sequelize, DataTypes);
-db.calorie_log = require("./calorie.model.js")(sequelize,DataTypes);
-db.sleep_log = require('./sleep.model.js')(sequelize,DataTypes);
+db.calorie_log = require("./calorie.model.js")(sequelize, DataTypes);
+db.sleep_log = require("./sleep.model.js")(sequelize, DataTypes);
+
+// ✅ NEW
+db.weekly_summary = require("./weeklySummary.model.js")(sequelize, DataTypes);
 
 module.exports = db;
