@@ -5,4 +5,7 @@ const aiController = require("../controllers/ai.controller");
 
 router.get("/weekly-summary", verifyToken, aiController.getWeeklySummary);
 
+// ✅ NEW route for history
+router.get("/history", verifyToken, aiController.getSummaryHistory);
+
 module.exports = router;

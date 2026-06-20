@@ -6,6 +6,7 @@ const { Op } = db.Sequelize;
 const WaterLog = db.water_log;
 const CalorieLog = db.calorie_log;
 const SleepLog = db.sleep_log;
+const WeeklySummary = db.weekly_summary;
 
 exports.getWeeklySummary = async (req, res) => {
   try {
@@ -15,6 +16,27 @@ exports.getWeeklySummary = async (req, res) => {
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 6);
 
+    const weekStart = startDate.toISOString().split("T")[0];
+    const weekEnd = endDate.toISOString().split("T")[0];
+
+    // ✅ Step 1: Check if summary already exists in DB
+    const existingSummary = await WeeklySummary.findOne({
+      where: { userId, weekStart, weekEnd },
+    });
+
+    if (existingSummary) {
+      console.log("✅ Weekly Summary fetched from DB (cached)");
+
+      return res.status(200).json({
+        summary: existingSummary.summaryText,
+        avgWater: existingSummary.avgWater.toFixed(2),
+        avgCalories: existingSummary.avgCalories.toFixed(2),
+        avgSleep: existingSummary.avgSleep.toFixed(2),
+        cached: true,
+      });
+    }
+
+    // ✅ Step 2: Fetch last 7 days logs
     const waterLogs = await WaterLog.findAll({
       where: { userId, date: { [Op.between]: [startDate, endDate] } },
       order: [["date", "ASC"]],
@@ -68,6 +90,8 @@ Format output like:
 Keep tone simple and motivational.
 `;
 
+    console.log("🤖 Generating new Weekly Summary using Groq...");
+
     const response = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -80,16 +104,31 @@ Keep tone simple and motivational.
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
           "Content-Type": "application/json",
         },
+        timeout: 20000,
       }
     );
 
     const summary = response.data.choices[0].message.content;
+
+    // ✅ Step 3: Save summary in DB
+    await WeeklySummary.create({
+      userId,
+      weekStart,
+      weekEnd,
+      summaryText: summary,
+      avgWater,
+      avgCalories,
+      avgSleep,
+    });
+
+    console.log("💾 Weekly Summary stored in DB");
 
     res.status(200).json({
       summary,
       avgWater: avgWater.toFixed(2),
       avgCalories: avgCalories.toFixed(2),
       avgSleep: avgSleep.toFixed(2),
+      cached: false,
     });
   } catch (err) {
     console.error("❌ Groq Weekly Summary Error:", err.response?.data || err.message);
@@ -97,6 +136,24 @@ Keep tone simple and motivational.
     res.status(500).json({
       message: "AI summary failed",
       error: err.response?.data || err.message,
+    });
+  }
+};
+
+exports.getSummaryHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const summaries = await WeeklySummary.findAll({
+      where: { userId },
+      order: [["createdAt", "DESC"]],
+    });
+
+    res.status(200).json(summaries);
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to fetch history",
+      error: err.message,
     });
   }
 };

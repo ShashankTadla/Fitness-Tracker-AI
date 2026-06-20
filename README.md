@@ -99,6 +99,22 @@ A background timer automatically resets daily logs (like calories, water, etc.) 
 ![Sleep Logging page](ScreenShots/image-6.png)
 ![Calorie logging page](ScreenShots/image-7.png)
 
+## Testing
+
+Run tests:
+
+```bash
+npm test
+
+Generate coverage report:
+npm run test:coverage
+
+Current Coverage:
+Statements: 80.59%
+Branches: 46%
+Functions: 79.16%
+Lines: 81.29%
+
 ## 🙌 Contributing
 
 Feel free to fork the repository and submit pull requests to improve features or fix bugs.
