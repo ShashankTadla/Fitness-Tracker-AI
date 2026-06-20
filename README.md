@@ -90,7 +90,7 @@ A background timer automatically resets daily logs (like calories, water, etc.) 
 ---
 
 ## 📸 Screenshots
-![Intro page](ScreenShots/image.png)
+![Intro page](ScreenShots/image-8.png)
 ![Login page](ScreenShots/image-1.png)
 ![Dashboard](ScreenShots/image-2.png)
 ![Bmi calculator Page](ScreenShots/image-3.png)
@@ -98,6 +98,8 @@ A background timer automatically resets daily logs (like calories, water, etc.) 
 ![Water logging page](ScreenShots/image-5.png)
 ![Sleep Logging page](ScreenShots/image-6.png)
 ![Calorie logging page](ScreenShots/image-7.png)
+![Ai Weekly Health Summary](ScreenShots/image-9.png)
+![Weekly Report History](ScreenShots/image-10.png)
 
 ## Testing
 
