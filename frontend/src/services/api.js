@@ -1,33 +1,47 @@
 import axios from "axios";
 
 export const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: process.env.REACT_APP_API_URL + "/api",
 });
-
+console.log("API URL =", process.env.REACT_APP_API_URL);
 // Attach JWT token automatically for every request
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
+
   if (token) {
     req.headers.Authorization = `Bearer ${token}`;
   }
+
   return req;
 });
 
-// ✅ Auth APIs
-export const registerUser = (formData) => API.post("/auth/register", formData);
-export const loginUser = (formData) => API.post("/auth/login", formData);
-export const getProfile = () => API.get("/auth/profile");
+// Auth APIs
+export const registerUser = (formData) =>
+  API.post("/auth/register", formData);
 
-// ✅ Logs APIs
-export const logWater = (data) => API.post("/water/log", data);
-export const logCalorie = (data) => API.post("/calorie/log", data);
-export const logSleep = (data) => API.post("/sleep/log", data);
+export const loginUser = (formData) =>
+  API.post("/auth/login", formData);
 
-// ✅ AI Weekly Summary API
-export const getWeeklyAISummary = () => API.get("/ai/weekly-summary");
+export const getProfile = () =>
+  API.get("/auth/profile");
 
-// ✅ Backend status test
-export const getBackendStatus = () => axios.get("http://localhost:5000/");
+// Logs APIs
+export const logWater = (data) =>
+  API.post("/water/log", data);
 
-export const getAISummaryHistory = () => API.get("/ai/history");
+export const logCalorie = (data) =>
+  API.post("/calorie/log", data);
 
+export const logSleep = (data) =>
+  API.post("/sleep/log", data);
+
+// AI APIs
+export const getWeeklyAISummary = () =>
+  API.get("/ai/weekly-summary");
+
+export const getAISummaryHistory = () =>
+  API.get("/ai/history");
+
+// Backend status test
+export const getBackendStatus = () =>
+  axios.get(process.env.REACT_APP_API_URL);
