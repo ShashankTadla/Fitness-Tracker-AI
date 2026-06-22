@@ -1,33 +1,36 @@
 const jwt = require('jsonwebtoken');
 
-jest.mock('jsonwebtoken');
+jest.mock('jsonwebtoken'); //"Don't use the real JWT library. I'll fake its behavior myself."
 
 describe('Auth Middleware', () => {
 
+//normally express gives req,res,next to middleware.
   let req;
   let res;
   let next;
 
-  beforeEach(() => {
+  beforeEach(() => {    //Runs before EVERY test.
     req = {
       headers: {}
     };
 
     res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
+      status: jest.fn().mockReturnThis(),  //fake version of: res.status(401).json(...)
+      json: jest.fn()    //fake version of: res.json(...)
     };
 
-    next = jest.fn();
+    next = jest.fn();  //to record all the details like called?how many tkmes? what arguments?
 
-    jest.clearAllMocks();
+    jest.clearAllMocks();  ///clear all counts before each test
   });
 
   test('Should reject request without token', () => {
 
     const verifyToken = require('../middleware/auth');
 
-    verifyToken(req, res, next);
+    verifyToken(req, res, next);  //res.status(401).json({
+                                  //  message: 'No token provided'
+                                  //}); -> expected result
 
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({
@@ -41,7 +44,7 @@ describe('Auth Middleware', () => {
     req.headers.authorization =
       'Bearer valid-token';
 
-    jwt.verify.mockReturnValue({
+    jwt.verify.mockReturnValue({     //jwt.verify(token, secret) 
       id: 1,
       email: 'test@test.com'
     });
@@ -74,3 +77,10 @@ describe('Auth Middleware', () => {
   });
 
 });
+
+// note:
+// Use toBe():
+// When checking a value
+
+// Use toHaveBeenCalledWith()
+// When checking how a mock function was called

@@ -1,10 +1,10 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');  //hashes passwords
 const jwt = require('jsonwebtoken');
 
 const authController = require('../controllers/authController');
 const db = require('../models');
 
-jest.mock('../models', () => ({
+jest.mock('../models', () => ({   //mock db
   user: {
     findOne: jest.fn(),
     create: jest.fn(),
