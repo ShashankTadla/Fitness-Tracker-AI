@@ -1,8 +1,8 @@
 module.exports = {
-  HOST: "localhost",       // local server
-  USER: "root",            // default XAMPP MySQL username
-  PASSWORD: "",            // leave empty unless you set a password in XAMPP
-  DB: "fitness_tracker",   // name of the database you'll create
+  HOST: process.env.DB_HOST,
+  USER: process.env.DB_USER,
+  PASSWORD: process.env.DB_PASSWORD,
+  DB: process.env.DB_NAME,
   dialect: "mysql",
   pool: {
     max: 5,
