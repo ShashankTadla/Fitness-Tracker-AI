@@ -6,7 +6,7 @@ describe("Backend API", () => {
   test("GET / should return status 200", async () => {
     const response = await request(app).get("/"); //"Send a GET request to the / route and see what comes back."
 
-    expect(response.statusCode).toBe(500);
+    expect(response.statusCode).toBe(200);
   });
 
   test("GET / should return correct message", async () => {
