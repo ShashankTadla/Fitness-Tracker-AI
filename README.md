@@ -1,4 +1,4 @@
-# 🏋️‍♂️ Fitness Tracker
+<img width="1917" height="1018" alt="Screenshot 2026-09-17 123635 - Copy" src="https://github.com/user-attachments/assets/eba6c297-a579-4729-8601-5be4a94afc8a" /># 🏋️‍♂️ Fitness Tracker
 
 A full-stack Health and Fitness Tracker web application to help users monitor and manage their daily fitness goals — including calorie intake, water consumption, sleep tracking, and more.
 
@@ -89,8 +89,17 @@ A background timer automatically resets daily logs (like calories, water, etc.) 
 
 ---
 
-## 📸 Screenshots
-![Intro page](ScreenShots/image-8.png)
+## Deployment
+The application is deployed on AWS using the following architecture:
+
+- **Frontend:** Amazon S3 Static Website Hosting
+- **Backend:** AWS Elastic Beanstalk
+- **Database:** Amazon RDS (MySQL)
+- **AI Integration:** Groq API
+- **Authentication:** JWT
+
+## 📸 Application Screenshots
+![Intro page](ScreenShots/)
 ![Login page](ScreenShots/image-1.png)
 ![Dashboard](ScreenShots/image-2.png)
 ![Bmi calculator Page](ScreenShots/image-3.png)
