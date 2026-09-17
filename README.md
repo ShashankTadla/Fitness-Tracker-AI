@@ -36,6 +36,8 @@ All frontend requests go through the backend, which fetches or updates data from
 - 📅 Daily reset logic at midnight
 - 🎯 Set and update personal fitness goals
 - 🌐 Persistent data storage using MySQL
+- 🤖 AI-powered weekly health summaries
+- 📜 AI weekly report history
 
 ---
 
@@ -44,7 +46,7 @@ All frontend requests go through the backend, which fetches or updates data from
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/ShashankTadla/Fitness-Tracker.git  // fix this
+git clone https://github.com/ShashankTadla/Fitness-Tracker-AI.git  
 cd Fitness-Tracker
 ````
 ---
