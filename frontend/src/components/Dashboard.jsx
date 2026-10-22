@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
@@ -13,37 +14,45 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import { API, getWeeklyAISummary, getAISummaryHistory } from "../services/api";
+import {
+  API,
+  getWeeklyAISummary,
+  getAISummaryHistory,
+} from "../services/api";
 
 const Dashboard = () => {
-  const today = new Date();
-
   const [sleepData, setSleepData] = useState([]);
   const [waterData, setWaterData] = useState([]);
   const [calorieData, setCalorieData] = useState([]);
 
-  // ✅ AI Summary States
+  // AI Summary States
   const [aiSummary, setAiSummary] = useState("");
   const [aiStats, setAiStats] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
   const [aiError, setAiError] = useState("");
   const [cachedStatus, setCachedStatus] = useState(null);
 
-  // ✅ History States
+  // History States
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const generateLast7Days = () => {
+  // Generate last 7 days
+  const generateLast7Days = useCallback(() => {
     const days = [];
+    const today = new Date();
+
     for (let i = 6; i >= 0; i--) {
-      const date = new Date();
+      const date = new Date(today);
       date.setDate(today.getDate() - i);
       days.push(date.toISOString().split("T")[0]);
     }
-    return days;
-  };
 
-  const fetchWeeklyStats = async () => {
+    return days;
+  }, []);
+
+  // Fetch weekly statistics
+  const fetchWeeklyStats = useCallback(async () => {
+    const today = new Date();
     const endDate = today.toISOString().split("T")[0];
 
     const endpoints = [
@@ -54,7 +63,7 @@ const Dashboard = () => {
 
     const days = generateLast7Days();
 
-    for (let { key, setter } of endpoints) {
+    for (const { key, setter } of endpoints) {
       try {
         const res = await API.get(`/${key}/weekly`, {
           params: { endDate },
@@ -66,21 +75,40 @@ const Dashboard = () => {
           const log = rawData.find((item) => item.date === date);
 
           let value = 0;
+
           if (key === "sleep") value = log?.sleepHours || 0;
           if (key === "water") value = log?.waterIntake || 0;
           if (key === "calorie") value = log?.calorieIntake || 0;
 
-          return { date: date.slice(5), value };
+          return {
+            date: date.slice(5),
+            value,
+          };
         });
 
         setter(mapped);
       } catch (err) {
-        console.error(`❌ Failed to fetch ${key} stats`, err);
+        console.error(`Failed to fetch ${key} stats`, err);
       }
     }
-  };
+  }, [generateLast7Days]);
 
-  // ✅ Fetch AI Weekly Summary (Generate / Cached)
+  // Fetch AI summary history
+  const fetchHistory = useCallback(async () => {
+    try {
+      setLoadingHistory(true);
+
+      const res = await getAISummaryHistory();
+
+      setHistory(res.data);
+    } catch (err) {
+      console.error("Failed to fetch AI summary history", err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
+  // Generate AI weekly summary
   const fetchAISummary = async () => {
     try {
       setLoadingAI(true);
@@ -92,6 +120,7 @@ const Dashboard = () => {
       const res = await getWeeklyAISummary();
 
       setAiSummary(res.data.summary);
+
       setAiStats({
         avgWater: res.data.avgWater,
         avgCalories: res.data.avgCalories,
@@ -100,47 +129,39 @@ const Dashboard = () => {
 
       setCachedStatus(res.data.cached ? "cached" : "new");
 
-      // refresh history after generating
-      fetchHistory();
+      await fetchHistory();
     } catch (err) {
-      console.error("❌ AI summary error:", err);
-      setAiError(err.response?.data?.message || "AI Summary failed");
+      console.error("AI summary error:", err);
+
+      setAiError(
+        err.response?.data?.message || "AI Summary failed"
+      );
     } finally {
       setLoadingAI(false);
     }
   };
 
-  // ✅ Fetch Summary History
-  const fetchHistory = async () => {
-    try {
-      setLoadingHistory(true);
-      const res = await getAISummaryHistory();
-      setHistory(res.data);
-    } catch (err) {
-      console.error("❌ Failed to fetch AI summary history", err);
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
-
-  // ✅ When user clicks history report
+  // Open old report
   const openHistoryReport = (report) => {
     setAiSummary(report.summaryText);
+
     setAiStats({
-      avgWater: report.avgWater.toFixed(2),
-      avgCalories: report.avgCalories.toFixed(2),
-      avgSleep: report.avgSleep.toFixed(2),
+      avgWater: Number(report.avgWater).toFixed(2),
+      avgCalories: Number(report.avgCalories).toFixed(2),
+      avgSleep: Number(report.avgSleep).toFixed(2),
     });
 
     setCachedStatus("history");
     setAiError("");
   };
 
+  // Load dashboard data
   useEffect(() => {
     fetchWeeklyStats();
     fetchHistory();
-  }, []);
+  }, [fetchWeeklyStats, fetchHistory]);
 
+  // Render chart
   const renderCard = (title, data, color) => (
     <div className="chart-card">
       <h3>{title}</h3>
@@ -151,7 +172,11 @@ const Dashboard = () => {
           <XAxis dataKey="date" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="value" fill={color} radius={[10, 10, 0, 0]} />
+          <Bar
+            dataKey="value"
+            fill={color}
+            radius={[10, 10, 0, 0]}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -166,17 +191,24 @@ const Dashboard = () => {
 
         <div className="dashboard-content">
           <h2>Welcome to FitTrack!</h2>
-          <p>Select an option from the sidebar to start tracking your health.</p>
 
-          {/* Weekly charts */}
+          <p>
+            Select an option from the sidebar to start
+            tracking your health.
+          </p>
+
+          {/* Weekly Charts */}
           <div className="charts-section">
             {renderCard("Sleep (hrs)", sleepData, "#9575cd")}
             {renderCard("Water (L)", waterData, "#4fc3f7")}
             {renderCard("Calories", calorieData, "#ff8a65")}
           </div>
 
-          {/* AI Weekly Summary Section */}
-          <div className="chart-card" style={{ marginTop: "30px" }}>
+          {/* AI Weekly Summary */}
+          <div
+            className="chart-card"
+            style={{ marginTop: "30px" }}
+          >
             <h3>🤖 AI Weekly Health Summary</h3>
 
             <button
@@ -192,33 +224,58 @@ const Dashboard = () => {
                 color: "white",
               }}
             >
-              {loadingAI ? "Generating..." : "Generate Weekly Report"}
+              {loadingAI
+                ? "Generating..."
+                : "Generate Weekly Report"}
             </button>
 
             {/* Status */}
             {cachedStatus && (
-              <p style={{ marginTop: "10px", fontWeight: "bold" }}>
-                {cachedStatus === "cached" && "✅ Loaded from Database (Cached)"}
-                {cachedStatus === "new" && "🔥 New Report Generated by AI"}
-                {cachedStatus === "history" && "📌 Viewing Old Report"}
+              <p
+                style={{
+                  marginTop: "10px",
+                  fontWeight: "bold",
+                }}
+              >
+                {cachedStatus === "cached" &&
+                  "✅ Loaded from Database (Cached)"}
+
+                {cachedStatus === "new" &&
+                  "🔥 New Report Generated by AI"}
+
+                {cachedStatus === "history" &&
+                  "📌 Viewing Old Report"}
               </p>
             )}
 
+            {/* Error */}
             {aiError && (
-              <p style={{ color: "red", marginTop: "10px" }}>❌ {aiError}</p>
+              <p
+                style={{
+                  color: "red",
+                  marginTop: "10px",
+                }}
+              >
+                ❌ {aiError}
+              </p>
             )}
 
-            {/* Stats */}
+            {/* AI Stats */}
             {aiStats && (
               <div style={{ marginTop: "15px" }}>
                 <p>
-                  <strong>Avg Water:</strong> {aiStats.avgWater} L/day
+                  <strong>Avg Water:</strong>{" "}
+                  {aiStats.avgWater} L/day
                 </p>
+
                 <p>
-                  <strong>Avg Calories:</strong> {aiStats.avgCalories} kcal/day
+                  <strong>Avg Calories:</strong>{" "}
+                  {aiStats.avgCalories} kcal/day
                 </p>
+
                 <p>
-                  <strong>Avg Sleep:</strong> {aiStats.avgSleep} hrs/day
+                  <strong>Avg Sleep:</strong>{" "}
+                  {aiStats.avgSleep} hrs/day
                 </p>
               </div>
             )}
@@ -258,7 +315,9 @@ const Dashboard = () => {
                         borderRadius: "6px",
                         background: "#eaf2ff",
                       }}
-                      onClick={() => openHistoryReport(item)}
+                      onClick={() =>
+                        openHistoryReport(item)
+                      }
                     >
                       📅 {item.weekStart} → {item.weekEnd}
                     </li>
