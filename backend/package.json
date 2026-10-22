@@ -1,6 +1,8 @@
+
 {
   "name": "backend",
   "version": "1.0.0",
+  "description": "AI Fitness Tracker Backend API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -8,10 +10,12 @@
     "test": "jest",
     "test:coverage": "jest --coverage"
   },
+  "engines": {
+    "node": ">=20 <25"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.5",

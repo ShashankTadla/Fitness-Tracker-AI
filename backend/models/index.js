@@ -10,11 +10,13 @@ const sequelize = new Sequelize(
     port: dbConfig.port,
     dialect: dbConfig.dialect,
     dialectOptions: dbConfig.dialectOptions,
-    pool: dbConfig.pool
+    pool: dbConfig.pool,
+    logging: false
   }
 );
 
 const db = {};
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
