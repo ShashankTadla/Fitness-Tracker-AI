@@ -101,7 +101,7 @@ The application is deployed on AWS using the following architecture:
 - **Authentication:** JWT
 
 ## 📸 Application Screenshots
-![Intro page]<img width="1917" height="1022" alt="Screenshot 2026-09-17 125457" src="https://github.com/user-attachments/assets/90915ddd-26d9-40d8-91c1-b8ef57c4d7d7" />
+![Intro page](ScreenShots/image-8.png)
 
 ![Register page]<img width="1917" height="1018" alt="Screenshot 2026-09-17 123635 - Copy" src="https://github.com/user-attachments/assets/28f5f3e5-08d4-429a-89eb-cffa8473b7bd" />
 ![Login page]<img width="1917" height="1022" alt="Screenshot 2026-09-17 125457" src="https://github.com/user-attachments/assets/90915ddd-26d9-40d8-91c1-b8ef57c4d7d7" />
